@@ -32,10 +32,12 @@ Z1 = np.array([pauliz, id2, id2])
 Z2 = np.array([id2, pauliz, id2])
 Z3 = np.array([id2, id2, pauliz])
 
-H = np.array([Z1,Z2,Z3,A1,A2,A3])
+H = np.array([Z1, Z2, Z3, A1, A2, A3])
+w = np.ones(np.size(H, 0))
+
 T = 10
 
-h_t = 0.1
+h_t = 0.01
 m_t = int(T/h_t+1)
 sol = np.zeros([m_t,8], dtype=np.complex128)
 tretangel = np.zeros(m_t)
@@ -46,7 +48,7 @@ progress.start_progress("Calculating...")
 for tid in range(m_t-1):
     x = tid/m_t*100
     progress.progress(x)
-    a, t = rk4.step(rhs.rhs, a, t, h_t, H)
+    a, t = rk4.step(rhs.rhs, a, t, h_t, H, w)
     sol[tid+1,:] = a
     tretangel[tid+1] = ent.entanglement(a)
     #print(a)
@@ -59,9 +61,9 @@ for i in range(8):
     axs[i].set_ylim([0,1])
     axs[i].plot(range(m_t),ABS[:,i])
 
-plt.figure('Normalisering')
-superpos = np.array([np.sum(ABS[i,:]) for i in range(m_t)])
-plt.plot(range(m_t),superpos)
+#plt.figure('Normalisering')
+#superpos = np.array([np.sum(ABS[i,:]) for i in range(m_t)])
+#plt.plot(range(m_t),superpos)
 
 plt.figure('Tretangel')
 plt.plot(range(m_t),tretangel)
