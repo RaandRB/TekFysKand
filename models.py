@@ -96,64 +96,45 @@ def DMCircle(d=[0,0,1]):
     
     return np.array([A1_1,A1_2,A1_3,A1_4,A1_5,A1_6,A2_1,A2_2,A2_3,A2_4,A2_5,A2_6,A3_1,A3_2,A3_3,A3_4,A3_5,A3_6])
 
-def threeParticleLine(d=[1,1,1]):
-    #s3*(s1 x s2)
-    #x
-    A1_1 = d[0]*np.array([pauliy,pauliz,paulix])
-    A1_2 = d[0]*-1*np.array([pauliz,pauliy,paulix])
-    #y
-    A1_3 = d[0]*-1*np.array([paulix,pauliz,pauliy])
-    A1_4 = d[0]*np.array([pauliz,paulix,pauliy])
-    #z
-    A1_5 = d[0]*np.array([paulix,pauliy,pauliz])
-    A1_6 = d[0]*-1*np.array([pauliy,paulix,pauliz])
-
-    #s2*(s1 x s3)
-    #x
-    A2_1 = d[0]*np.array([pauliy,paulix,pauliz])
-    A2_2 = d[0]*-1*np.array([pauliz,paulix,pauliy])
-    #y
-    A2_3 = d[1]*-1*np.array([paulix,pauliy,pauliz])
-    A2_4 = d[1]*np.array([pauliz,pauliy,paulix])
-    #z
-    A2_5 = d[2]*np.array([paulix,pauliz,pauliy])
-    A2_6 = d[2]*-1*np.array([pauliy,pauliz,paulix])
-
-    return np.array([A1_1,A1_2,A1_3,A1_4,A1_5,A1_6,A2_1,A2_2,A2_3,A2_4,A2_5,A2_6])
-
-
-def threeParticleCircle(d=[1,1,1]):
-    #s3*(s1 x s2)
-    #x
-    A1_1 = d[0]*np.array([pauliy,pauliz,paulix])
-    A1_2 = d[0]*-1*np.array([pauliz,pauliy,paulix])
-    #y
-    A1_3 = d[0]*-1*np.array([paulix,pauliz,pauliy])
-    A1_4 = d[0]*np.array([pauliz,paulix,pauliy])
-    #z
-    A1_5 = d[0]*np.array([paulix,pauliy,pauliz])
-    A1_6 = d[0]*-1*np.array([pauliy,paulix,pauliz])
-
-    #s2*(s1 x s3)
-    #x
-    A2_1 = d[0]*np.array([pauliy,paulix,pauliz])
-    A2_2 = d[0]*-1*np.array([pauliz,paulix,pauliy])
-    #y
-    A2_3 = d[1]*-1*np.array([paulix,pauliy,pauliz])
-    A2_4 = d[1]*np.array([pauliz,pauliy,paulix])
-    #z
-    A2_5 = d[2]*np.array([paulix,pauliz,pauliy])
-    A2_6 = d[2]*-1*np.array([pauliy,pauliz,paulix])
-
+def threeParticle1(d=1):
     #s1*(s2 x s3)
     #x
-    A3_1 = d[0]*np.array([paulix,pauliy,pauliz])
-    A3_2 = d[0]*-1*np.array([paulix,pauliz,pauliy])
+    A1 = d*np.array([paulix,pauliy,pauliz])
+    A2 = d*-1*np.array([paulix,pauliz,pauliy])
     #y
-    A3_3 = d[1]*-1*np.array([pauliy,paulix,pauliz])
-    A3_4 = d[1]*np.array([pauliy,pauliz,paulix])
+    A3 = d*-1*np.array([pauliy,paulix,pauliz])
+    A4 = d*np.array([pauliy,pauliz,paulix])
     #z
-    A3_5 = d[2]*np.array([pauliz,paulix,pauliy])
-    A3_6 = d[2]*-1*np.array([pauliz,pauliy,paulix])
+    A5 = d*np.array([pauliz,paulix,pauliy])
+    A6 = d*-1*np.array([pauliz,pauliy,paulix])
 
-    return np.array([A1_1,A1_2,A1_3,A1_4,A1_5,A1_6,A2_1,A2_2,A2_3,A2_4,A2_5,A2_6,A3_1,A3_2,A3_3,A3_4,A3_5,A3_6])
+    return np.array([A1,A2,A3,A4,A5,A6])
+
+
+def threeParticle2(d=1):
+    #s2*(s1 x s3)
+    #x
+    A1 = d*np.array([pauliy,paulix,pauliz])
+    A2 = d*-1*np.array([pauliz,paulix,pauliy])
+    #y
+    A3 = d*-1*np.array([paulix,pauliy,pauliz])
+    A4 = d*np.array([pauliz,pauliy,paulix])
+    #z
+    A5 = d*np.array([paulix,pauliz,pauliy])
+    A6 = d*-1*np.array([pauliy,pauliz,paulix])
+
+    return np.array([A1,A2,A3,A4,A5,A6])
+
+def threeParticle3(d=1):
+    #s3*(s1 x s2)
+    #x
+    A1 = d*np.array([pauliy,pauliz,paulix])
+    A2 = d*-1*np.array([pauliz,pauliy,paulix])
+    #y
+    A3 = d*-1*np.array([paulix,pauliz,pauliy])
+    A4 = d*np.array([pauliz,paulix,pauliy])
+    #z
+    A5 = d*np.array([paulix,pauliy,pauliz])
+    A6 = d*-1*np.array([pauliy,paulix,pauliz])
+
+    return np.array([A1,A2,A3,A4,A5,A6])
