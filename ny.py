@@ -5,12 +5,14 @@ import progress, models2, rk4
 import rhs2, rhs
 import entanglement as ent
 import shurda as sh
+import fractions
 
 #initial conditions
 a = np.zeros(8, dtype=np.complex128)
-a[1] = 7
-a[7] = 1
-a[0] = -5
+a[0] = 1/np.sqrt(2)
+a[7] = 1/np.sqrt(2)
+
+
 a = a/np.linalg.norm(a)
 
 a0 = a
@@ -30,25 +32,32 @@ Z3 = np.array([id2, id2, pauliz])
 ZZ = np.array([Z1,Z2,Z3])
 XX = np.array([np.array([paulix, paulix, paulix])])
 
-Zeeman = 8.8889*sh.Ham(pauliz,id2,id2) + 4.5*sh.Ham(id2,pauliz,id2) + sh.Ham(id2,id2,pauliz)
+Zeeman = sh.Ham(pauliz,id2,id2) + sh.Ham(id2,pauliz,id2) + sh.Ham(id2,id2,pauliz)
 
 
-H = Zeeman + models2.DMCircle([np.pi,2,np.e])
-
+H = models2.DMCircle([1,1,0])
 w, v = np.linalg.eig(H)
 w = np.real(w)
 
-print(w)
+#print(w)
+#ratio1 = w[0]/w[7]
+#ratio2 = w[0]/w[3]
+#test1 = fractions.Fraction(ratio1)
+#test2 = fractions.Fraction(ratio2)
+#print((test1, test2))
 
-print(w[0]/w[7])
-print(w[0]/w[4])
-print(w[0]/w[3])
-print(w[4]/w[7])
-print(w[3]/w[4])
+#numerator1 = test1.numerator
+#numerator2 = test2.numerator
+#prime1 = sh.prime_factors(np.abs(numerator1))
+#prime2 = sh.prime_factors(np.abs(numerator2))
+
+#print(prime1)
+#print(prime2)
+
 
 #A = models.DM([1,0,0])
-T_end = 100
-h_t = 0.001
+T_end = 10
+h_t = 0.01
 m_t = int(T_end/h_t+1)
 T = np.linspace(0, T_end, m_t)
 sol = np.zeros([m_t,8], dtype=np.complex128)
@@ -67,6 +76,8 @@ for tid in range(m_t-1):
     sol[tid+1,:] = np.flip(a)
     tretangel[tid+1] = ent.entanglement(np.flip(a))
     prob[tid+1] = np.abs((np.transpose(a0)@a))**2
+    #if prob[tid+1] >= 0.98:
+    #    print(tid)
 
 progress.end_progress()
 
@@ -77,12 +88,21 @@ for i in range(8):
     axs[i].set_ylim([0,1])
     axs[i].plot(range(m_t),ABS[:,i])
 
-plt.figure('Tretangel')
-plt.plot(range(m_t), tretangel)
+fig2, axs2 = plt.subplots(8)
+for i in range(8):
+    axs2[i].set_ylim([-1,1])
+    axs2[i].plot(range(m_t), np.real(sol[:,i]), 'r')
+    axs2[i].plot(range(m_t), np.imag(sol[:,i]), 'b')
 
-plt.figure('Probability')
-plt.plot(range(m_t), prob)
+diff = np.absolute(prob-tretangel)
 
+plt.figure('Tretangel och Prob')
+plt.plot(range(m_t), tretangel,'r', label='Residual entanglement')
+plt.plot(range(m_t), prob, 'b', label='Survival probability')
+plt.legend(loc='upper left')
+
+plt.figure('Diff')
+plt.plot(range(m_t), diff)
 
 plt.show()
 

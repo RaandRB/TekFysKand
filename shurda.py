@@ -25,6 +25,15 @@ def initial(a):
 def Ham(H1, H2, H3):
     return np.kron(np.kron(H1,H2),H3)
 
-print(s0)
-print(s7)
-
+def prime_factors(n):
+    i = 2
+    factors = []
+    while i * i <= n:
+        if n % i:
+            i += 1
+        else:
+            n //= i
+            factors.append(i)
+    if n > 1:
+        factors.append(n)
+    return factors
