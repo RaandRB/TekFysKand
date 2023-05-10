@@ -21,6 +21,11 @@ states = np.array([s0,s1,s2,s3,s4,s5,s6,s7])
 def initial(a):
     return [states[i]*a[i] for i in range(8)]
 
+def entropy(A):
+    ent = sum(np.abs(a)**2*np.log(np.abs(a)**2) for a in A)
+
+    return -ent
+
 
 def Ham(H1, H2, H3):
     return np.kron(np.kron(H1,H2),H3)

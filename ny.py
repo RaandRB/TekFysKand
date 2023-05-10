@@ -10,10 +10,11 @@ import math
 from decimal import Decimal
 
 #initial conditions
-a = np.zeros(8, dtype=np.complex128)
+a = np.ones(8, dtype=np.complex128)
 om = np.exp(2j/3*np.pi)
-a[0:8] = 1
-
+a[0] = -1
+a[6] = -1
+a[5] = 1
 a = a/np.linalg.norm(a)
 
 a0 = a
@@ -25,72 +26,57 @@ id2 = np.matrix(np.eye(2))
 
 Zeeman = sh.Ham(pauliz,id2,id2) + sh.Ham(id2,pauliz,id2) + sh.Ham(id2,id2,pauliz)
 
-H = models2.DMLine() + 0.01*Zeeman + 0.01*models2.heisenbergLine()
+H = models2.DMLine([1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)]) + 0.1*models2.heisenbergLine() + 0.01*Zeeman
 
 w, v = np.linalg.eig((H))
 w = np.real(w)
-#for i in v:
-#    print(np.transpose(a)@np.resize(i,8))
-print(w)
+v = np.resize(v, (8,8))
 
-
-#fractions = [fr.Fraction(Decimal(str(i))) for i in w2]
-
-#m = [i.denominator for i in fractions]
-#n = [i.numerator for i in fractions]
-
-
-#print(fractions)
-#lcm = 1
-#for i in n:
-#    lcm = lcm*i//np.gcd(lcm, i)
-#gcd = math.gcd(*m)
-#print((lcm,gcd))
-#revivalTime = 2*np.pi*lcm/gcd
-#print(revivalTime)
 w3 = np.abs(w)
 w3 = np.sort(w3)
+index = np.lexsort((w, np.abs(w)))
+low_states = np.array([np.array(state) for ind,state in enumerate(v) if ind >= 4])
+high_states = np.array([np.array(state) for ind,state in enumerate(v) if ind < 4 ])
 
-print(w3)
+print(w)
 
-count1 = sum(i<0 for i in w3[0:4])
-count2 = sum(i<0 for i in w3[4:8])
+eigweights = np.array([np.abs(np.conjugate(a0)@A)**2 for A in v])
 
+time_scales = np.array([2*np.pi/i for i in w])
 
-lowerw = np.array(w3[0:4])
-upperw = np.array(w3[4:8])
-plw = np.polyfit(np.array(range(4)), lowerw, 3)
-puw = np.polyfit(np.array(range(4)), upperw, 3)
+coh = np.zeros((8,8))
 
+for j in range(8):
+    for i in range(8):
+        coh[j][i] = np.round(np.abs(2*np.pi/(w[j]-w[i])),5)
+coh = np.unique(np.resize(coh, 64))
 
-test_t1 = 2*np.pi/lowerw[0]
-test_t2 = 2*np.pi/upperw[0]
+temp1 = np.zeros((8,8))
+for j in range(8):
+    for i in range(8):
+        temp1[j][i] = np.round(np.abs(w[j]+w[i]),5)
+temp1 = np.unique(np.resize(temp1,64))
 
-kep_t1 = 2*np.pi/lowerw[1]
-kep_t2 = 2*np.pi/upperw[1]
+temp2 = np.zeros((np.size(temp1),np.size(temp1)))
 
-res_t1 = 2*np.pi/(1/2*lowerw[2])
-res_t2 = 2*np.pi/(1/2*upperw[2])
+for j in range(np.size(temp1)):
+    for i in range(np.size(temp1)):
+        temp2[j][i] = np.round(np.abs(2*np.pi/(temp1[j]-temp1[i])),4)
 
-supres_t1 = 2*np.pi/(1/6*lowerw[3])
-supres_t2 = 2*np.pi/(1/6*upperw[3])
+temp2 = np.unique(np.resize(temp2,np.size(temp1)))
+print(temp2)
 
-print(test_t1, test_t2)
-
-print(kep_t1, kep_t2)
-
-print(res_t1, res_t2)
-
-print(supres_t1, supres_t2)
-
-T_end = 2000
+print(coh)
+T_end = 1000
 h_t = 0.01
 m_t = int(T_end/h_t+1)
 T = np.linspace(0, T_end, m_t)
 sol = np.zeros([m_t,8], dtype=np.complex128)
 tretangel = np.zeros(m_t)
-tretangel[0] = ent.entanglement(np.flip(a))
+tretangel[0] = ent.entanglement(np.flip(a0))
 prob = np.zeros(m_t)
+entropy = np.zeros(m_t)
+entropy[0] = sh.entropy(a)
 prob[0] = 1
 sol[0] = np.flip(a)
 t = 0
@@ -103,51 +89,71 @@ for tid in range(m_t-1):
     sol[tid+1,:] = np.flip(a)
     tretangel[tid+1] = ent.entanglement(np.flip(a))
     prob[tid+1] = np.abs((np.conjugate(a0)@a))**2
-    #if prob[tid+1] >= 0.98:
-    #    print(tid)
+    entropy[tid+1] = sh.entropy(a)
+
 
 progress.end_progress()
 
+
 ABS = np.array([np.absolute(i) for i in sol[:]])
+coh = np.sort(coh)
+fourier2 = np.fft.fft(tretangel)
+xfour2 = np.fft.fftfreq(m_t)
 
-#fig, axs = plt.subplots(8)
-#for i in range(8):
-#    axs[i].set_ylim([0,1])
-#    axs[i].plot(range(m_t),ABS[:,i])
+#plt.figure('Entropy')
+#plt.plot(T, entropy)
 
-#fig2, axs2 = plt.subplots(8)
-#for i in range(8):
-#    axs2[i].set_ylim([-1,1])
-#    axs2[i].plot(range(m_t), np.real(sol[:,i]), 'r')
-#    axs2[i].plot(range(m_t), np.imag(sol[:,i]), 'b')
+plt.figure('eigenshurdas')
+plt.plot(coh, '*')
+print('Score: ' + str(np.size(coh)))
 
+period1 = 100*int(coh[0]//(2*h_t))
+period2 = 100*period1
 
-#sq = np.array([np.sum(ABS[i,:]**2) for i in range(m_t)])
-#plt.figure('Normalisering')
-#ax = plt.gca()
-#ax.set_ylim([0,1.1])
-#plt.plot(range(m_t), sq)
+test = np.zeros(m_t)
+test[0:period1] = 0
+test[-period1:] = 0
+print(m_t-2*period1)
+print(np.array(range(period1,m_t-period1)))
+#for tid in range(period1,m_t-period1):
+#    test[tid] = np.sqrt(2)/(period1)*np.trapz(prob[tid-period1:tid+period1])
+#test2 = np.zeros(m_t-period1-2*period2)
+#for tid in range(m_t-period1-period2,m_t+period2-period1):
+#    test2[tid] = 1/(2*100*period2)*np.trapz(test[tid-period2:tid+period2])
 
-diff = np.absolute(prob-tretangel)
+#print((np.size(temp1),m_t))
+#fourier1 = np.fft.fft(test[period1:-period1])
+#xfour1 = np.fft.fftfreq(m_t-2*period1)
+
+#plt.figure('Fourier')
+#plt.plot(xfour1,fourier1)
+
 
 plt.figure('Residual entanglement')
-plt.plot(T, tretangel,'r', label='Residual entanglement')
+plt.plot(T, np.abs(tretangel),'r', label='Residual entanglement')
+#for i in temp2:
+#    if i < 4000:
+#        plt.axvline(x=np.abs(i), color='r')
+ 
+
 plt.figure('Survival probability')
-plt.plot(T, prob, 'b', label='Survival probability')
-plt.axvline(x=test_t1, color='y')
-plt.axvline(x=test_t2, color='r')
-plt.axvline(x=kep_t1, color ='y')
-plt.axvline(x=kep_t2, color='r')
-plt.axvline(x=res_t1, color='y')
-plt.axvline(x=res_t2, color='r')
-plt.axvline(x=supres_t1, color='y')
-plt.axvline(x=supres_t2, color='r')
-#plt.legend(loc='upper left')
+plt.plot(T, prob, 'b')
+#plt.plot(T,test, 'r')
 
+colors = ['r', 'y', 'b', 'm', 'g', 'r', 'k', 'c']
 
+#for i in w:
+#    if 1/i < 4000:
+#        plt.axvline(x=np.abs(2*np.pi/i), color='r')
+    #plt.axhline(y=eigweights[i], color='b')
+for i in coh:
+    if i < 4000:
+        plt.axvline(x=np.abs(i), color='g')
+ 
 
-#plt.figure('Diff')
-#plt.plot(range(m_t), diff)
+ax = plt.gca()
+ax.legend()
 
 plt.show()
+
 
